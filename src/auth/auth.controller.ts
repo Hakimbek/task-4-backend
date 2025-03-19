@@ -25,7 +25,7 @@ export class AuthController {
     try {
       const { email, username, password } = body;
       await this.authService.signup(email, username, password);
-      res.status(HttpStatus.CREATED).send('User successfully created. Please logon.');
+      res.status(HttpStatus.CREATED).send('User successfully created. Please login.');
     } catch (e) {
       res.status(HttpStatus.CONFLICT).send(e.message);
     }
