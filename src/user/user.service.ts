@@ -33,7 +33,7 @@ export class UserService {
     return this.userRepository.save(user);
   }
 
-  async changeStatus(users: { id: string; isActive: boolean; }[]): Promise<{ updated: number; }> {
+  async changeStatus(users: { id: string; isActive: boolean; }[]): Promise<number> {
     const ids = users.map(user => user.id);
     const existingUsers = await this.userRepository.findBy({ id: In(ids) });
     const existingIds = existingUsers.map(user => user.id);
@@ -47,7 +47,7 @@ export class UserService {
 
     await Promise.all(updatePromises);
 
-    return { updated: users.length };
+    return users.length;
   }
 
   async updateLastLoginTime(id: string): Promise<User> {
@@ -60,7 +60,7 @@ export class UserService {
     return this.userRepository.save(user);
   }
 
-  async deleteUser(ids: string[]): Promise<{ deleted: number; }> {
+  async deleteUser(ids: string[]): Promise<number> {
     const existingUsers = await this.userRepository.findBy({ id: In(ids) });
     const existingIds = existingUsers.map(user => user.id);
     const invalidIds = ids.filter(id => !existingIds.includes(id));
@@ -68,6 +68,7 @@ export class UserService {
     if (invalidIds.length > 0) throw new BadRequestException(`Invalid or non-existent IDs: ${invalidIds.join(', ')}`);
 
     const deleteResult = await this.userRepository.delete(existingIds);
-    return { deleted: deleteResult.affected || 0 };
+
+    return deleteResult.affected || 0;
   }
 }
