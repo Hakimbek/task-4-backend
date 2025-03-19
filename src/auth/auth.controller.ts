@@ -37,7 +37,7 @@ export class AuthController {
       @Res() res: Response
   ) {
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(HttpStatus.UNAUTHORIZED).send("Token missing or invalid format");
+      return res.status(HttpStatus.UNAUTHORIZED).json({ valid: false });
     }
 
     const token = authHeader.split(" ")[1];
