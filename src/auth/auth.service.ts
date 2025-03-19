@@ -24,6 +24,15 @@ export class AuthService {
     return null;
   }
 
+  async validateToken(token: string): Promise<{ valid: boolean }> {
+    try {
+      this.jwtService.verify(token);
+      return { valid: true };
+    } catch (error) {
+      throw new UnauthorizedException("Invalid or expired token");
+    }
+  }
+
   async login(email: string, password: string) {
     const user: User = await this.validateUser(email, password);
 

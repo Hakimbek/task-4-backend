@@ -1,6 +1,6 @@
-import {Controller, Post, Body, Res, HttpStatus} from '@nestjs/common';
+import { Controller, Post, Body, Res, Get, Headers, HttpStatus, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import {Response} from "express";
+import { Response } from "express";
 
 @Controller('auth')
 export class AuthController {
@@ -29,5 +29,18 @@ export class AuthController {
     } catch (e) {
       res.status(HttpStatus.CONFLICT).send(e.message);
     }
+  }
+
+  @Get("validate")
+  async validateToken(
+      @Headers("authorization") authHeader: string,
+      @Res() res: Response
+  ) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(HttpStatus.UNAUTHORIZED).send("Token missing or invalid format");
+    }
+
+    const token = authHeader.split(" ")[1];
+    return this.authService.validateToken(token);
   }
 }
