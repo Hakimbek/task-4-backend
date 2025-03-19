@@ -1,7 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 
 @Injectable()
 export class UserService {
@@ -33,14 +33,21 @@ export class UserService {
     return this.userRepository.save(user);
   }
 
-  async changeStatus(id: string, isActive: boolean): Promise<User> {
-    const user = await this.userRepository.findOne({ where: { id } });
+  async changeStatus(users: { id: string; isActive: boolean; }[]): Promise<{ updated: number; }> {
+    const ids = users.map(user => user.id);
+    const existingUsers = await this.userRepository.findBy({ id: In(ids) });
+    const existingIds = existingUsers.map(user => user.id);
+    const invalidIds = ids.filter(id => !existingIds.includes(id));
 
-    if (!user) throw new NotFoundException(`User with ID ${id} not found`);
+    if (invalidIds.length > 0) throw new NotFoundException(`User with IDs ${invalidIds.join(', ')} not found`);
 
-    user.isActive = isActive;
+    const updatePromises = users.map(user =>
+        this.userRepository.update(user.id, { isActive: user.isActive }),
+    );
 
-    return this.userRepository.save(user);
+    await Promise.all(updatePromises);
+
+    return { updated: users.length };
   }
 
   async updateLastLoginTime(id: string): Promise<User> {
@@ -53,10 +60,14 @@ export class UserService {
     return this.userRepository.save(user);
   }
 
-  async deleteUser(id: string): Promise<void> {
-    const result = await this.userRepository.delete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException(`User with ID ${id} not found`);
-    }
+  async deleteUser(ids: string[]): Promise<{ deleted: number; }> {
+    const existingUsers = await this.userRepository.findBy({ id: In(ids) });
+    const existingIds = existingUsers.map(user => user.id);
+    const invalidIds = ids.filter(id => !existingIds.includes(id));
+
+    if (invalidIds.length > 0) throw new BadRequestException(`Invalid or non-existent IDs: ${invalidIds.join(', ')}`);
+
+    const deleteResult = await this.userRepository.delete(existingIds);
+    return { deleted: deleteResult.affected || 0 };
   }
 }

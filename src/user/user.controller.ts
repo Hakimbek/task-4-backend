@@ -22,14 +22,13 @@ export class UserController {
 
   @Patch('change-status')
   @UseGuards(JwtAuthGuard)
-  async changeStatus(@Body() body: { id: string; isActive: boolean }) {
-    const { id, isActive } = body;
-    return this.userService.changeStatus(id, isActive);
+  async changeStatus(@Body('users') users: { id: string; isActive: boolean }[]) {
+    return this.userService.changeStatus(users);
   }
 
   @Delete()
   @UseGuards(JwtAuthGuard)
-  async deleteUser(@Body('id') id: string) {
-    return this.userService.deleteUser(id);
+  async deleteUser(@Body('ids') ids: string[]) {
+    return this.userService.deleteUser(ids);
   }
 }
