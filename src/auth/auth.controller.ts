@@ -41,6 +41,7 @@ export class AuthController {
     }
 
     const token = authHeader.split(" ")[1];
-    return await this.authService.validateToken(token);
+    const result = await this.authService.validateToken(token);
+    res.status(HttpStatus.OK).json(result);
   }
 }
