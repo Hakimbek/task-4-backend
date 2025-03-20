@@ -8,7 +8,7 @@ export class User {
   id: string;
 
   @Column()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Username is required' })
   username: string;
 
   @Column({ unique: true })

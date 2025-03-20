@@ -1,9 +1,10 @@
-import { Controller, Get } from '@nestjs/common';
+import {Controller, Get, HttpStatus, Res} from '@nestjs/common';
+import { Response } from "express";
 
 @Controller('health')
 export class HealthController {
     @Get()
-    checkHealth() {
-        return { status: 'OK', timestamp: new Date().toISOString() };
+    checkHealth(@Res() res: Response) {
+        res.status(HttpStatus.OK).send({ message: 'Healthy', statusCode: HttpStatus.OK });
     }
 }

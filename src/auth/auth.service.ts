@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  UnauthorizedException,
-  ConflictException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -24,10 +20,9 @@ export class AuthService {
     return null;
   }
 
-  async validateToken(token: string): Promise<{ valid: boolean }> {
+  async validateToken(token: string) {
     try {
       this.jwtService.verify(token);
-      return { valid: true };
     } catch (error) {
       throw new UnauthorizedException("Invalid or expired token");
     }
@@ -43,13 +38,12 @@ export class AuthService {
     await this.userService.updateLastLoginTime(user.id);
     const payload = { sub: user.id, email: user.email };
 
-    return { token: this.jwtService.sign(payload) };
+    return this.jwtService.sign(payload);
   }
 
   async signup(email: string, username: string, password: string) {
     const existingUser = await this.userService.findByEmail(email);
     if (existingUser) throw new ConflictException('Email already in use');
-
     await this.userService.createUser(email, username, password);
   }
 }

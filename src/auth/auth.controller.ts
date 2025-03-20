@@ -1,47 +1,29 @@
 import { Controller, Post, Body, Res, Get, Headers, HttpStatus, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Response } from "express";
+import SignUpDto from "../dto/SignUpDto";
+import LogInDto from "../dto/LogInDto";
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  async login(@Body() body: { email: string; password: string }, @Res() res: Response) {
-    try {
-      const { email, password } = body;
-      const token = await this.authService.login(email, password);
-      res.status(HttpStatus.OK).json(token);
-    } catch (e) {
-      res.status(HttpStatus.BAD_REQUEST).send(e.message);
-    }
+  async login(@Body() { email, password }: LogInDto, @Res() res: Response) {
+    const token = await this.authService.login(email, password);
+    res.status(HttpStatus.OK).json({ message: 'Successfully logged in', statusCode: HttpStatus.OK, token });
   }
 
   @Post('signup')
-  async signup(
-    @Body() body: { email: string; username: string; password: string },
-    @Res() res: Response
-  ) {
-    try {
-      const { email, username, password } = body;
-      await this.authService.signup(email, username, password);
-      res.status(HttpStatus.CREATED).send('User successfully created. Please login.');
-    } catch (e) {
-      res.status(HttpStatus.CONFLICT).send(e.message);
-    }
+  async signup(@Body() { email, username, password }: SignUpDto, @Res() res: Response) {
+    await this.authService.signup(email, username, password);
+    res.status(HttpStatus.OK).json({ message: 'User successfully created. Please login', statusCode: HttpStatus.OK });
   }
 
   @Get("validate")
-  async validateToken(
-      @Headers("authorization") authHeader: string,
-      @Res() res: Response
-  ) {
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(HttpStatus.UNAUTHORIZED).json({ valid: false });
-    }
-
-    const token = authHeader.split(" ")[1];
-    const result = await this.authService.validateToken(token);
-    res.status(HttpStatus.OK).json(result);
+  async validateToken(@Headers("authorization") authHeader: string, @Res() res: Response) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) throw new UnauthorizedException("Invalid or expired token");
+    await this.authService.validateToken(authHeader.split(" ")[1]);
+    res.status(HttpStatus.OK).json({ message: 'Token is valid', statusCode: HttpStatus.OK });
   }
 }
