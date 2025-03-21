@@ -18,6 +18,6 @@ import * as process from 'node:process';
   ],
   providers: [AuthService, JwtStrategy],
   controllers: [AuthController],
-  exports: [AuthService],
+  exports: [AuthService, JwtModule],
 })
 export class AuthModule {}
