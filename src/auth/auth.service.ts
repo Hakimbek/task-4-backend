@@ -42,8 +42,10 @@ export class AuthService {
   }
 
   async signup(email: string, username: string, password: string) {
-    const existingUser = await this.userService.findByEmail(email);
-    if (existingUser) throw new ConflictException('Email already in use');
-    await this.userService.createUser(email, username, password);
+    try {
+      await this.userService.createUser(email, username, password);
+    } catch {
+      throw new ConflictException('Email already in use');
+    }
   }
 }
