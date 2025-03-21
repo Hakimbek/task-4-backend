@@ -42,7 +42,7 @@ export class UserService {
 
     const updatePromises = ids.map(id => this.userRepository.update(id, { isActive }));
     await Promise.all(updatePromises);
-
+    await this.checkUserToken(authHeader.split(" ")[1]);
     return this.userRepository.find();
   }
 
@@ -64,7 +64,7 @@ export class UserService {
     if (invalidIds.length > 0) throw new BadRequestException(`Invalid or non-existent IDs: ${invalidIds.join(', ')}`);
 
     await this.userRepository.delete(existingIds);
-
+    await this.checkUserToken(authHeader.split(" ")[1]);
     return this.userRepository.find();
   }
 
